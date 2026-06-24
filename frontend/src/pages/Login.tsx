@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth, UserContextData } from '../context/AuthContext';
-import { LoginFormInputs } from '../types';
-import api from '../api/axiosConfig';
+import { useAuth } from '../context/AuthContext';
+import type { LoginFormInputs } from '../types';
+import api from '../api/axios';
 
 const Login: React.FC = () => {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormInputs>();
@@ -22,29 +22,17 @@ const Login: React.FC = () => {
     setServerError(null);
 
     try {
-      // In a real application, you would hit your API:
-      // const response = await api.post('/auth/login', data);
-      // const { token, user } = response.data.data;
+      const response = await api.post('/auth/login', data);
+      const token = response.data.data?.token || response.data.token;
       
-      // For this scaffold, we simulate an API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      if (data.email === 'admin@procureflow.com' && data.password === 'admin123') {
-        const dummyUser: UserContextData = {
-          id: 1,
-          email: 'admin@procureflow.com',
-          name: 'Super Admin',
-          role: 'Admin'
-        };
-        const dummyToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // fake token
-        
-        login(dummyToken, dummyUser);
+      if (token) {
+        login(token);
         navigate(from, { replace: true });
       } else {
-        setServerError('Invalid email or password. Use admin@procureflow.com / admin123');
+        setServerError('Token not received from server.');
       }
     } catch (error: any) {
-      setServerError(error.response?.data?.message || 'Failed to login. Please try again.');
+      setServerError(error.response?.data?.message || error.response?.data?.error || 'Failed to login. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }

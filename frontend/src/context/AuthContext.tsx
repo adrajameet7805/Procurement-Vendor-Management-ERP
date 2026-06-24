@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import api from '../api/axiosConfig';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { jwtDecode } from 'jwt-decode';
 
 export interface UserContextData {
   id: number;
@@ -8,10 +8,19 @@ export interface UserContextData {
   role: 'Admin' | 'Procurement Officer' | 'Manager' | 'Vendor';
 }
 
+interface JwtPayload {
+  id: number;
+  email: string;
+  name: string;
+  role: 'Admin' | 'Procurement Officer' | 'Manager' | 'Vendor';
+  exp: number;
+  iat: number;
+}
+
 interface AuthContextType {
   user: UserContextData | null;
   token: string | null;
-  login: (token: string, userData: UserContextData) => void;
+  login: (token: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -25,31 +34,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // In a real app, you would verify the token with the backend here.
-    // For now, we will mock parsing it or assume if it exists, we are logged in.
-    // Since we don't have the backend /me endpoint fully ready, let's mock it if token exists.
-    const initializeAuth = async () => {
+    const initializeAuth = () => {
       if (token) {
         try {
-          // Placeholder for real backend validation:
-          // const response = await api.get('/auth/me');
-          // setUser(response.data.data);
-          
-          // Temporary mock user extraction (usually decoded from JWT):
-          const mockUserString = localStorage.getItem('user');
-          if (mockUserString) {
-            setUser(JSON.parse(mockUserString));
+          const decoded = jwtDecode<JwtPayload>(token);
+          // Check expiration
+          if (decoded.exp * 1000 < Date.now()) {
+            logout();
           } else {
-             // Fallback dummy user if token exists but no user data
-             setUser({
-               id: 1,
-               email: 'admin@procureflow.com',
-               name: 'Admin User',
-               role: 'Admin'
-             });
+            setUser({
+              id: decoded.id,
+              email: decoded.email,
+              name: decoded.name,
+              role: decoded.role,
+            });
           }
         } catch (error) {
-          console.error('Failed to authenticate token', error);
+          console.error('Invalid token', error);
           logout();
         }
       }
@@ -59,16 +60,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     initializeAuth();
   }, [token]);
 
-  const login = (newToken: string, userData: UserContextData) => {
+  const login = (newToken: string) => {
     localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify(userData));
     setToken(newToken);
-    setUser(userData);
+    try {
+      const decoded = jwtDecode<JwtPayload>(newToken);
+      setUser({
+        id: decoded.id,
+        email: decoded.email,
+        name: decoded.name,
+        role: decoded.role,
+      });
+    } catch (error) {
+      console.error('Error decoding newly stored token:', error);
+    }
   };
 
   const logout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
     setToken(null);
     setUser(null);
   };

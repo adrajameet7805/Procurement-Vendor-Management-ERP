@@ -2,11 +2,12 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   HomeIcon,
-  UsersIcon,
+  BuildingOfficeIcon,
   DocumentTextIcon,
-  ClipboardDocumentCheckIcon,
+  ScaleIcon,
+  CheckCircleIcon,
   ShoppingCartIcon,
-  ReceiptRefundIcon,
+  CreditCardIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../context/AuthContext';
@@ -18,12 +19,12 @@ const Sidebar: React.FC = () => {
   // Define full menu
   const menuItems = [
     { name: 'Dashboard', path: '/dashboard', icon: HomeIcon, roles: ['Admin', 'Procurement Officer', 'Manager', 'Vendor'] },
-    { name: 'Vendors', path: '/vendors', icon: UsersIcon, roles: ['Admin', 'Procurement Officer'] },
+    { name: 'Vendors', path: '/vendors', icon: BuildingOfficeIcon, roles: ['Admin', 'Procurement Officer'] },
     { name: 'RFQs', path: '/rfq', icon: DocumentTextIcon, roles: ['Admin', 'Procurement Officer', 'Vendor'] },
-    { name: 'Quotations', path: '/quotations', icon: ClipboardDocumentCheckIcon, roles: ['Admin', 'Procurement Officer', 'Manager', 'Vendor'] },
-    { name: 'Approvals', path: '/approvals', icon: ClipboardDocumentCheckIcon, roles: ['Admin', 'Manager'] },
+    { name: 'Quotations', path: '/quotations', icon: ScaleIcon, roles: ['Admin', 'Procurement Officer', 'Manager', 'Vendor'] },
+    { name: 'Approvals', path: '/approvals', icon: CheckCircleIcon, roles: ['Admin', 'Manager'] },
     { name: 'Purchase Orders', path: '/purchase-orders', icon: ShoppingCartIcon, roles: ['Admin', 'Procurement Officer', 'Manager'] },
-    { name: 'Invoices', path: '/invoices', icon: ReceiptRefundIcon, roles: ['Admin', 'Vendor'] },
+    { name: 'Invoices', path: '/invoices', icon: CreditCardIcon, roles: ['Admin', 'Vendor'] },
     { name: 'Reports', path: '/reports', icon: ChartBarIcon, roles: ['Admin', 'Manager'] },
   ];
 
