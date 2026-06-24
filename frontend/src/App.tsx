@@ -1,13 +1,33 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './routes/ProtectedRoute';
+import MainLayout from './components/Layout/MainLayout';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-lg">
-        <h1 className="text-3xl font-bold text-blue-600 mb-4">ProcureFlow ERP</h1>
-        <p className="text-gray-600">Frontend scaffolding successful!</p>
-        <p className="text-sm text-gray-500 mt-4">React 18 + TS + Vite + Tailwind CSS</p>
-      </div>
-    </div>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Public Route */}
+          <Route path="/login" element={<Login />} />
+
+          {/* Protected Routes inside MainLayout */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              {/* Other routes will go here: /vendors, /rfq, etc. */}
+            </Route>
+          </Route>
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 
