@@ -1,17 +1,49 @@
 version: '3.8'
 
 services:
-  db:
+  mysql:
     image: mysql:8
     container_name: procureflow-mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: procureflow_root_pass
-      MYSQL_DATABASE: procureflow_db
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-procureflow_root_pass}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-procureflow_db}
     ports:
-      - "3306:3306"
+      - "${DB_PORT:-3306}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: procureflow-backend
+    restart: always
+    ports:
+      - "${PORT:-5000}:${PORT:-5000}"
+    env_file:
+      - .env
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: procureflow-frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:5000/api}
+    depends_on:
+      - backend
 
 volumes:
   mysql_data:
